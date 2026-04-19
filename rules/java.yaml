@@ -6,6 +6,8 @@
   language: java
   pattern: 'KeyPairGenerator\.getInstance\s*\(\s*["'']RSA["'']'
   algorithm: RSA
+  quantum_threat: shor-broken
+  primitive: asymmetric-encryption
   severity: HIGH
   message: RSA key generation is quantum-vulnerable
   migration: >
@@ -20,6 +22,8 @@
   language: java
   pattern: 'Cipher\.getInstance\s*\(\s*["'']RSA'
   algorithm: RSA
+  quantum_threat: shor-broken
+  primitive: asymmetric-encryption
   severity: HIGH
   message: RSA cipher is quantum-vulnerable
   migration: >
@@ -33,6 +37,8 @@
   language: java
   pattern: 'KeyAgreement\.getInstance\s*\(\s*["'']ECDH["'']'
   algorithm: ECDH
+  quantum_threat: shor-broken
+  primitive: key-exchange
   severity: HIGH
   message: ECDH key agreement is quantum-vulnerable
   migration: Replace with ML-KEM (FIPS 203) for key encapsulation.
@@ -44,6 +50,8 @@
   language: java
   pattern: 'KeyPairGenerator\.getInstance\s*\(\s*["'']EC["'']'
   algorithm: ECDSA
+  quantum_threat: shor-broken
+  primitive: signature
   severity: HIGH
   message: EC key generation is quantum-vulnerable (covers both ECDSA and ECDH)
   migration: >
@@ -58,6 +66,8 @@
   language: java
   pattern: 'Signature\.getInstance\s*\(\s*["'']SHA1with'
   algorithm: SHA-1
+  quantum_threat: classical-broken
+  primitive: signature
   severity: HIGH
   message: SHA-1 signature scheme is classically broken and quantum-vulnerable
   migration: >
@@ -71,6 +81,8 @@
   language: java
   pattern: 'KeyPairGenerator\.getInstance\s*\(\s*["'']DSA["'']'
   algorithm: DSA
+  quantum_threat: shor-broken
+  primitive: signature
   severity: HIGH
   message: DSA is quantum-vulnerable
   migration: Replace with ML-DSA (FIPS 204).
@@ -82,6 +94,8 @@
   language: java
   pattern: 'KeyPairGenerator\.getInstance\s*\(\s*["'']DH["'']'
   algorithm: DH
+  quantum_threat: shor-broken
+  primitive: key-exchange
   severity: HIGH
   message: Diffie-Hellman key exchange is quantum-vulnerable
   migration: Replace with ML-KEM (FIPS 203).
@@ -94,6 +108,8 @@
   language: java
   pattern: 'RSAKeyGenerationParameters|RSAPrivateCrtKeyParameters|RSAKeyParameters'
   algorithm: RSA
+  quantum_threat: shor-broken
+  primitive: asymmetric-encryption
   severity: HIGH
   message: Bouncy Castle RSA parameter class detected — quantum-vulnerable
   migration: >
@@ -107,6 +123,8 @@
   language: java
   pattern: 'ECDHBasicAgreement|ECDHCBasicAgreement'
   algorithm: ECDH
+  quantum_threat: shor-broken
+  primitive: key-exchange
   severity: HIGH
   message: Bouncy Castle ECDH key agreement is quantum-vulnerable
   migration: Replace with ML-KEM via Bouncy Castle PQC module (org.bouncycastle.pqc.crypto.mlkem).

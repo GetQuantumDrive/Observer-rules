@@ -5,6 +5,8 @@
   language: python
   pattern: 'rsa\.generate_private_key|RSA\.generate|generate_private_key.*rsa'
   algorithm: RSA
+  quantum_threat: shor-broken
+  primitive: asymmetric-encryption
   severity: HIGH
   message: RSA key generation is quantum-vulnerable
   migration: Use pqcrypto or liboqs-python for ML-DSA (signing) or ML-KEM (key exchange).
@@ -16,6 +18,8 @@
   language: python
   pattern: 'ec\.generate_private_key|ECDH\(|ECDSA\('
   algorithm: ECDSA/ECDH
+  quantum_threat: shor-broken
+  primitive: signature
   severity: HIGH
   message: Elliptic curve cryptography is quantum-vulnerable
   migration: >
@@ -29,6 +33,8 @@
   language: python
   pattern: 'from cryptography.*import.*RSA|import rsa\b'
   algorithm: RSA
+  quantum_threat: shor-broken
+  primitive: asymmetric-encryption
   severity: MEDIUM
   message: RSA import detected — verify this is not used for long-lived key material
   migration: Audit all uses. Migrate key exchange to ML-KEM, signatures to ML-DSA.
@@ -40,6 +46,8 @@
   language: python
   pattern: 'paramiko\.RSAKey|RSAKey\.generate'
   algorithm: RSA
+  quantum_threat: shor-broken
+  primitive: signature
   severity: HIGH
   message: Paramiko RSA SSH key is quantum-vulnerable
   migration: >
@@ -55,6 +63,8 @@
   language: python
   pattern: 'from Crypto\.PublicKey import RSA|Crypto\.PublicKey\.RSA'
   algorithm: RSA
+  quantum_threat: shor-broken
+  primitive: asymmetric-encryption
   severity: HIGH
   message: PyCryptodome RSA usage is quantum-vulnerable
   migration: Replace with liboqs-python ML-KEM/ML-DSA.

@@ -5,6 +5,8 @@
   language: go
   pattern: 'rsa\.GenerateKey|rsa\.GenerateMultiPrimeKey'
   algorithm: RSA
+  quantum_threat: shor-broken
+  primitive: asymmetric-encryption
   severity: HIGH
   message: Go RSA key generation is quantum-vulnerable
   migration: >
@@ -19,6 +21,8 @@
   language: go
   pattern: 'ecdh\.P256\(\)|ecdh\.P384\(\)|ecdh\.P521\(\)|ecdh\.X25519\(\)'
   algorithm: ECDH
+  quantum_threat: shor-broken
+  primitive: key-exchange
   severity: HIGH
   message: Go ECDH key agreement is quantum-vulnerable
   migration: >
@@ -32,6 +36,8 @@
   language: go
   pattern: 'ecdsa\.GenerateKey|ecdsa\.Sign|ecdsa\.Verify'
   algorithm: ECDSA
+  quantum_threat: shor-broken
+  primitive: signature
   severity: HIGH
   message: Go ECDSA is quantum-vulnerable
   migration: Replace with ML-DSA via github.com/cloudflare/circl/sign/mldsa.
@@ -43,6 +49,8 @@
   language: go
   pattern: 'dsa\.GenerateKey|dsa\.Sign'
   algorithm: DSA
+  quantum_threat: shor-broken
+  primitive: signature
   severity: HIGH
   message: Go DSA is quantum-vulnerable and deprecated since Go 1.15
   migration: Replace with ML-DSA via github.com/cloudflare/circl/sign/mldsa.
@@ -54,6 +62,8 @@
   language: go
   pattern: 'tls\.TLS_RSA_WITH|tls\.TLS_ECDHE_RSA'
   algorithm: RSA
+  quantum_threat: shor-broken
+  primitive: key-exchange
   severity: HIGH
   message: Explicit TLS cipher suite using RSA key exchange is quantum-vulnerable
   migration: >
