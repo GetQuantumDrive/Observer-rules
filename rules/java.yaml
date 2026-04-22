@@ -131,3 +131,171 @@
   metadata:
     cwe: CWE-327
     references: [NIST FIPS 203]
+
+- id: java-bc-ecdsa-signer
+  language: java
+  pattern: 'ECDSASigner'
+  algorithm: ECDSA
+  quantum_threat: shor-broken
+  primitive: signature
+  severity: HIGH
+  message: Bouncy Castle ECDSASigner (low-level ECDSA) is quantum-vulnerable
+  migration: >
+    Replace with ML-DSA via Bouncy Castle PQC module (org.bouncycastle.pqc.crypto.mldsa).
+  metadata:
+    cwe: CWE-327
+    references: [NIST FIPS 204]
+
+- id: java-bc-dsa-signer
+  language: java
+  pattern: 'DSASigner|DSADigestSigner'
+  algorithm: DSA
+  quantum_threat: shor-broken
+  primitive: signature
+  severity: HIGH
+  message: Bouncy Castle DSA signer is quantum-vulnerable
+  migration: >
+    Replace with ML-DSA via Bouncy Castle PQC module (org.bouncycastle.pqc.crypto.mldsa).
+  metadata:
+    cwe: CWE-327
+    references: [NIST FIPS 204]
+
+- id: java-bc-dh-agreement
+  language: java
+  pattern: 'DHBasicAgreement'
+  algorithm: DH
+  quantum_threat: shor-broken
+  primitive: key-exchange
+  severity: HIGH
+  message: Bouncy Castle DHBasicAgreement (Diffie-Hellman) is quantum-vulnerable
+  migration: >
+    Replace with ML-KEM (FIPS 203) for key encapsulation via org.bouncycastle.pqc.crypto.mlkem.
+  metadata:
+    cwe: CWE-327
+    references: [NIST FIPS 203]
+
+- id: java-bc-elgamal-engine
+  language: java
+  pattern: 'ElGamalEngine|ElGamalKeyGenerationParameters|ElGamalParameters'
+  algorithm: ElGamal
+  quantum_threat: shor-broken
+  primitive: asymmetric-encryption
+  severity: HIGH
+  message: Bouncy Castle ElGamal engine is quantum-vulnerable (discrete-log problem)
+  migration: >
+    Replace with ML-KEM (FIPS 203) for key encapsulation via org.bouncycastle.pqc.crypto.mlkem.
+  metadata:
+    cwe: CWE-327
+    references: [NIST FIPS 203]
+
+- id: java-bc-rsa-engine
+  language: java
+  pattern: 'RSAEngine|RSABlindedEngine'
+  algorithm: RSA
+  quantum_threat: shor-broken
+  primitive: asymmetric-encryption
+  severity: HIGH
+  message: Bouncy Castle RSA engine is quantum-vulnerable
+  migration: >
+    Replace with ML-KEM (FIPS 203) for key encapsulation or ML-DSA (FIPS 204) for signing
+    via org.bouncycastle.pqc.crypto.mlkem / org.bouncycastle.pqc.crypto.mldsa.
+  metadata:
+    cwe: CWE-327
+    references: [NIST FIPS 203, NIST FIPS 204]
+
+- id: java-bc-xdh-agreement
+  language: java
+  pattern: 'XDHBasicAgreement'
+  algorithm: X25519/X448
+  quantum_threat: shor-broken
+  primitive: key-exchange
+  severity: HIGH
+  message: Bouncy Castle XDH (X25519/X448) key agreement is quantum-vulnerable
+  migration: >
+    Replace with ML-KEM (FIPS 203) for key encapsulation via org.bouncycastle.pqc.crypto.mlkem.
+  metadata:
+    cwe: CWE-327
+    references: [NIST FIPS 203]
+
+- id: java-bc-eddsa-signer
+  language: java
+  pattern: 'Ed25519Signer|Ed448Signer|Ed25519ctxSigner|Ed25519phSigner'
+  algorithm: EdDSA
+  quantum_threat: shor-broken
+  primitive: signature
+  severity: HIGH
+  message: Bouncy Castle EdDSA signer (Ed25519/Ed448) is quantum-vulnerable
+  migration: >
+    Replace with ML-DSA via Bouncy Castle PQC module (org.bouncycastle.pqc.crypto.mldsa).
+  metadata:
+    cwe: CWE-327
+    references: [NIST FIPS 204]
+
+- id: java-bc-ecies
+  language: java
+  pattern: 'ECIESEngine'
+  algorithm: ECIES
+  quantum_threat: shor-broken
+  primitive: asymmetric-encryption
+  severity: HIGH
+  message: Bouncy Castle ECIESEngine (EC-based hybrid encryption) is quantum-vulnerable
+  migration: >
+    Replace with ML-KEM (FIPS 203) for key encapsulation via org.bouncycastle.pqc.crypto.mlkem.
+  metadata:
+    cwe: CWE-327
+    references: [NIST FIPS 203]
+
+- id: java-bc-sm2
+  language: java
+  pattern: 'SM2Signer|SM2Engine|SM2KeyExchange'
+  algorithm: SM2
+  quantum_threat: shor-broken
+  primitive: signature
+  severity: HIGH
+  message: Bouncy Castle SM2 (Chinese EC-based standard) is quantum-vulnerable
+  migration: >
+    Replace with ML-DSA (FIPS 204) for signing or ML-KEM (FIPS 203) for key exchange
+    via the Bouncy Castle PQC module.
+  metadata:
+    cwe: CWE-327
+    references: [NIST FIPS 203, NIST FIPS 204]
+
+# JCA — additional quantum-vulnerable algorithm strings (X25519/X448/EdDSA)
+- id: java-xdh-keygen
+  language: java
+  pattern: 'KeyPairGenerator\.getInstance\s*\(\s*["''](X25519|X448|XDH)["'']'
+  algorithm: X25519/X448
+  quantum_threat: shor-broken
+  primitive: key-exchange
+  severity: HIGH
+  message: X25519/X448 key generation is quantum-vulnerable
+  migration: Replace with ML-KEM (FIPS 203) for key encapsulation.
+  metadata:
+    cwe: CWE-327
+    references: [NIST FIPS 203]
+
+- id: java-eddsa-keygen
+  language: java
+  pattern: 'KeyPairGenerator\.getInstance\s*\(\s*["''](Ed25519|Ed448|EdDSA)["'']'
+  algorithm: EdDSA
+  quantum_threat: shor-broken
+  primitive: signature
+  severity: HIGH
+  message: EdDSA (Ed25519/Ed448) key generation is quantum-vulnerable
+  migration: Replace with ML-DSA (FIPS 204) for digital signatures.
+  metadata:
+    cwe: CWE-327
+    references: [NIST FIPS 204]
+
+- id: java-xdh-agreement
+  language: java
+  pattern: 'KeyAgreement\.getInstance\s*\(\s*["''](X25519|X448|XDH)["'']'
+  algorithm: X25519/X448
+  quantum_threat: shor-broken
+  primitive: key-exchange
+  severity: HIGH
+  message: X25519/X448 key agreement is quantum-vulnerable
+  migration: Replace with ML-KEM (FIPS 203) for key encapsulation.
+  metadata:
+    cwe: CWE-327
+    references: [NIST FIPS 203]
