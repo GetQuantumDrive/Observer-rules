@@ -417,3 +417,33 @@
   metadata:
     cwe: CWE-327
     references: [NIST FIPS 203]
+
+- id: java-nimbus-jws-rsa-alg
+  language: java
+  pattern: 'JWSAlgorithm\.(RS256|RS384|RS512|PS256|PS384|PS512)'
+  algorithm: RSA
+  quantum_threat: shor-broken
+  primitive: signature
+  severity: HIGH
+  message: Nimbus JOSE+JWT JWSAlgorithm RSA/PSS variant is quantum-vulnerable
+  migration: >
+    Replace with a post-quantum JWT signing algorithm when standardized.
+    Interim: use ML-DSA (FIPS 204) for signatures outside JWT context.
+  metadata:
+    cwe: CWE-327
+    references: [NIST FIPS 204]
+
+- id: java-nimbus-jws-ecdsa-alg
+  language: java
+  pattern: 'JWSAlgorithm\.(ES256|ES384|ES512|ES256K)'
+  algorithm: ECDSA
+  quantum_threat: shor-broken
+  primitive: signature
+  severity: HIGH
+  message: Nimbus JOSE+JWT JWSAlgorithm ECDSA variant is quantum-vulnerable
+  migration: >
+    Replace with a post-quantum JWT signing algorithm when standardized.
+    Interim: use ML-DSA (FIPS 204) for signatures outside JWT context.
+  metadata:
+    cwe: CWE-327
+    references: [NIST FIPS 204]
