@@ -477,3 +477,29 @@
   metadata:
     cwe: CWE-327
     references: [NIST FIPS 204]
+
+- id: java-jose4j-rsa-alg
+  language: java
+  pattern: 'AlgorithmIdentifiers\.(RSA_USING_SHA|RSA_PSS_USING_SHA)'
+  algorithm: RSA
+  quantum_threat: shor-broken
+  primitive: signature
+  severity: HIGH
+  message: jose4j RSA/PSS algorithm identifier is quantum-vulnerable
+  migration: Replace with ML-DSA (FIPS 204) for digital signatures.
+  metadata:
+    cwe: CWE-327
+    references: [NIST FIPS 204]
+
+- id: java-jose4j-ecdsa-alg
+  language: java
+  pattern: 'AlgorithmIdentifiers\.ECDSA_USING_P'
+  algorithm: ECDSA
+  quantum_threat: shor-broken
+  primitive: signature
+  severity: HIGH
+  message: jose4j ECDSA algorithm identifier is quantum-vulnerable
+  migration: Replace with ML-DSA (FIPS 204) for digital signatures.
+  metadata:
+    cwe: CWE-327
+    references: [NIST FIPS 204]
