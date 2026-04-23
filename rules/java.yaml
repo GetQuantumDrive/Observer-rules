@@ -676,3 +676,37 @@
   metadata:
     cwe: CWE-327
     references: [NIST FIPS 204]
+
+- id: java-spring-jwt-access-token-converter-key-pair
+  language: java
+  pattern: '\.setKeyPair\s*\('
+  algorithm: RSA
+  quantum_threat: shor-broken
+  primitive: signature
+  severity: HIGH
+  message: >
+    JwtAccessTokenConverter.setKeyPair() configures RSA-based JWT signing in
+    Spring Security OAuth, which is quantum-vulnerable
+  migration: >
+    Migrate to ML-DSA (FIPS 204) for JWT signing when Spring Security adds
+    post-quantum JWT support.
+  metadata:
+    cwe: CWE-327
+    references: [NIST FIPS 204]
+
+- id: java-spring-key-store-key-factory
+  language: java
+  pattern: 'KeyStoreKeyFactory'
+  algorithm: RSA
+  quantum_threat: shor-broken
+  primitive: signature
+  severity: HIGH
+  message: >
+    KeyStoreKeyFactory loads an asymmetric (typically RSA) key pair for
+    Spring Security OAuth JWT signing, which is quantum-vulnerable
+  migration: >
+    Replace with a post-quantum key management approach using ML-DSA (FIPS 204)
+    when Spring Security adds PQC support.
+  metadata:
+    cwe: CWE-327
+    references: [NIST FIPS 204]
