@@ -260,6 +260,124 @@
     cwe: CWE-327
     references: [NIST FIPS 203, NIST FIPS 204]
 
+# JCA — RSA and ECDSA Signature.getInstance strings (SHA-2 variants; source: keycloak, netty, kafka)
+- id: java-rsa-signature
+  language: java
+  pattern: 'Signature\.getInstance\s*\(\s*["''](SHA256withRSA|SHA384withRSA|SHA512withRSA|SHA256withRSAandMGF1|SHA384withRSAandMGF1|SHA512withRSAandMGF1|RSASSA-PSS)["'']'
+  algorithm: RSA
+  quantum_threat: shor-broken
+  primitive: signature
+  severity: HIGH
+  message: RSA-based Signature.getInstance algorithm string is quantum-vulnerable
+  migration: Replace with ML-DSA (FIPS 204) for digital signatures.
+  metadata:
+    cwe: CWE-327
+    references: [NIST FIPS 204]
+
+- id: java-ecdsa-signature
+  language: java
+  pattern: 'Signature\.getInstance\s*\(\s*["''](SHA256withECDSA|SHA384withECDSA|SHA512withECDSA|NONEwithECDSA|SHA1withECDSA)["'']'
+  algorithm: ECDSA
+  quantum_threat: shor-broken
+  primitive: signature
+  severity: HIGH
+  message: ECDSA Signature.getInstance algorithm string is quantum-vulnerable
+  migration: Replace with ML-DSA (FIPS 204) for digital signatures.
+  metadata:
+    cwe: CWE-327
+    references: [NIST FIPS 204]
+
+# JJWT library — quantum-vulnerable JWT signing algorithm enums (source: jwtk/jjwt)
+- id: java-jjwt-rsa-alg
+  language: java
+  pattern: 'SignatureAlgorithm\.(RS256|RS384|RS512|PS256|PS384|PS512)'
+  algorithm: RSA
+  quantum_threat: shor-broken
+  primitive: signature
+  severity: HIGH
+  message: JJWT RSA/RSASSA-PSS signing algorithm is quantum-vulnerable
+  migration: >
+    No standardized PQC JWT algorithms exist yet. Track IETF JOSE WG for ML-DSA (FIPS 204)
+    JWT algorithm identifiers, and plan migration away from RS*/PS* algorithm strings.
+  metadata:
+    cwe: CWE-327
+    references: [NIST FIPS 204]
+
+- id: java-jjwt-ecdsa-alg
+  language: java
+  pattern: 'SignatureAlgorithm\.(ES256|ES384|ES512)'
+  algorithm: ECDSA
+  quantum_threat: shor-broken
+  primitive: signature
+  severity: HIGH
+  message: JJWT ECDSA signing algorithm is quantum-vulnerable
+  migration: >
+    No standardized PQC JWT algorithms exist yet. Track IETF JOSE WG for ML-DSA (FIPS 204)
+    JWT algorithm identifiers, and plan migration away from ES* algorithm strings.
+  metadata:
+    cwe: CWE-327
+    references: [NIST FIPS 204]
+
+# Bitcoin/Ethereum — secp256k1 and EC key patterns (source: bitcoinj/bitcoinj, web3j/web3j)
+- id: java-secp256k1-curve
+  language: java
+  pattern: '"secp256k1"'
+  algorithm: secp256k1
+  quantum_threat: shor-broken
+  primitive: signature
+  severity: HIGH
+  message: secp256k1 elliptic curve is quantum-vulnerable (used by Bitcoin/Ethereum)
+  migration: >
+    No direct PQC replacement exists for secp256k1 in blockchain contexts yet.
+    Monitor NIST PQC standards and Bitcoin/Ethereum protocol upgrade proposals.
+  metadata:
+    cwe: CWE-327
+    references: [NIST FIPS 204]
+
+- id: java-bitcoinj-eckey
+  language: java
+  pattern: 'org\.bitcoinj\.crypto\.ECKey'
+  algorithm: secp256k1/ECDSA
+  quantum_threat: shor-broken
+  primitive: signature
+  severity: HIGH
+  message: BitcoinJ ECKey uses secp256k1 ECDSA — quantum-vulnerable
+  migration: >
+    secp256k1-based Bitcoin keys have no PQC replacement yet.
+    Monitor Bitcoin BIP proposals for post-quantum signature schemes.
+  metadata:
+    cwe: CWE-327
+    references: [NIST FIPS 204]
+
+- id: java-web3j-eckeypair
+  language: java
+  pattern: 'org\.web3j\.crypto\.ECKeyPair'
+  algorithm: secp256k1/ECDSA
+  quantum_threat: shor-broken
+  primitive: signature
+  severity: HIGH
+  message: web3j ECKeyPair uses secp256k1 ECDSA — quantum-vulnerable
+  migration: >
+    secp256k1-based Ethereum keys have no PQC replacement yet.
+    Monitor Ethereum EIP proposals for post-quantum signature schemes.
+  metadata:
+    cwe: CWE-327
+    references: [NIST FIPS 204]
+
+# Signal Protocol — Curve25519 X25519 key exchange (source: signalapp/Signal-Android)
+- id: java-signal-curve25519
+  language: java
+  pattern: 'Curve25519'
+  algorithm: Curve25519/X25519
+  quantum_threat: shor-broken
+  primitive: key-exchange
+  severity: HIGH
+  message: Curve25519 (X25519) key exchange is quantum-vulnerable
+  migration: Replace with ML-KEM (FIPS 203) for post-quantum key encapsulation.
+  metadata:
+    cwe: CWE-327
+    references: [NIST FIPS 203]
+
 # JCA — additional quantum-vulnerable algorithm strings (X25519/X448/EdDSA)
 - id: java-xdh-keygen
   language: java
