@@ -519,3 +519,126 @@
   metadata:
     cwe: CWE-327
     references: [NIST FIPS 203, NIST FIPS 204]
+
+# ── Nimbus JOSE+JWT — JWE key encryption/agreement ────────────────────────────
+
+- id: java-nimbus-jwe-rsa-alg
+  language: java
+  pattern: 'JWEAlgorithm\.(RSA_OAEP|RSA_OAEP_256|RSA_OAEP_384|RSA_OAEP_512|RSA1_5)'
+  algorithm: RSA
+  quantum_threat: shor-broken
+  primitive: key-encapsulation
+  severity: HIGH
+  message: Nimbus JOSE+JWT JWEAlgorithm RSA key wrapping is quantum-vulnerable
+  migration: Replace with ML-KEM (FIPS 203) for key encapsulation.
+  metadata:
+    cwe: CWE-327
+    references: [NIST FIPS 203]
+
+- id: java-nimbus-jwe-ecdh-alg
+  language: java
+  pattern: 'JWEAlgorithm\.(ECDH_ES|ECDH_ES_A128KW|ECDH_ES_A192KW|ECDH_ES_A256KW)'
+  algorithm: ECDH
+  quantum_threat: shor-broken
+  primitive: key-exchange
+  severity: HIGH
+  message: Nimbus JOSE+JWT JWEAlgorithm ECDH-ES key agreement is quantum-vulnerable
+  migration: Replace with ML-KEM (FIPS 203) for key encapsulation.
+  metadata:
+    cwe: CWE-327
+    references: [NIST FIPS 203]
+
+# ── jose4j — JWE key management ───────────────────────────────────────────────
+
+- id: java-jose4j-rsa-kma
+  language: java
+  pattern: 'KeyManagementAlgorithmIdentifiers\.(RSA_OAEP|RSA_OAEP_256|RSA_OAEP_384|RSA_OAEP_512|RSA1_5)'
+  algorithm: RSA
+  quantum_threat: shor-broken
+  primitive: key-encapsulation
+  severity: HIGH
+  message: jose4j RSA key management algorithm is quantum-vulnerable
+  migration: Replace with ML-KEM (FIPS 203) for key encapsulation.
+  metadata:
+    cwe: CWE-327
+    references: [NIST FIPS 203]
+
+- id: java-jose4j-ecdh-kma
+  language: java
+  pattern: 'KeyManagementAlgorithmIdentifiers\.(ECDH_ES|ECDH_ES_A128KW|ECDH_ES_A192KW|ECDH_ES_A256KW)'
+  algorithm: ECDH
+  quantum_threat: shor-broken
+  primitive: key-exchange
+  severity: HIGH
+  message: jose4j ECDH-ES key management algorithm is quantum-vulnerable
+  migration: Replace with ML-KEM (FIPS 203) for key encapsulation.
+  metadata:
+    cwe: CWE-327
+    references: [NIST FIPS 203]
+
+# ── Bouncy Castle — additional low-level patterns ─────────────────────────────
+
+- id: java-bc-ec-named-curve-table
+  language: java
+  pattern: 'ECNamedCurveTable\.getParameterSpec\s*\('
+  algorithm: ECDSA/ECDH
+  quantum_threat: shor-broken
+  primitive: key-generation
+  severity: HIGH
+  message: Bouncy Castle named elliptic curve lookup is quantum-vulnerable
+  migration: Replace EC operations with ML-DSA (FIPS 204) or ML-KEM (FIPS 203).
+  metadata:
+    cwe: CWE-327
+    references: [NIST FIPS 203, NIST FIPS 204]
+
+- id: java-bc-rsa-key-gen-params
+  language: java
+  pattern: 'RSAKeyGenerationParameters'
+  algorithm: RSA
+  quantum_threat: shor-broken
+  primitive: key-generation
+  severity: HIGH
+  message: Bouncy Castle RSA key generation parameters are quantum-vulnerable
+  migration: Replace with ML-KEM (FIPS 203) for key encapsulation or ML-DSA (FIPS 204) for signing.
+  metadata:
+    cwe: CWE-327
+    references: [NIST FIPS 203, NIST FIPS 204]
+
+- id: java-bc-ec-key-gen-params
+  language: java
+  pattern: 'ECKeyGenerationParameters'
+  algorithm: ECDSA/ECDH
+  quantum_threat: shor-broken
+  primitive: key-generation
+  severity: HIGH
+  message: Bouncy Castle EC key generation parameters are quantum-vulnerable
+  migration: Replace EC with ML-DSA (FIPS 204) for signatures or ML-KEM (FIPS 203) for key exchange.
+  metadata:
+    cwe: CWE-327
+    references: [NIST FIPS 203, NIST FIPS 204]
+
+- id: java-bc-pkcs1-encoding
+  language: java
+  pattern: 'PKCS1Encoding'
+  algorithm: RSA
+  quantum_threat: shor-broken
+  primitive: asymmetric-encryption
+  severity: HIGH
+  message: Bouncy Castle PKCS#1 v1.5 RSA encoding is quantum-vulnerable
+  migration: Replace with ML-KEM (FIPS 203) for key encapsulation.
+  metadata:
+    cwe: CWE-327
+    references: [NIST FIPS 203]
+
+- id: java-bc-oaep-encoding
+  language: java
+  pattern: 'OAEPEncoding'
+  algorithm: RSA
+  quantum_threat: shor-broken
+  primitive: asymmetric-encryption
+  severity: HIGH
+  message: Bouncy Castle RSA-OAEP encoding is quantum-vulnerable
+  migration: Replace with ML-KEM (FIPS 203) for key encapsulation.
+  metadata:
+    cwe: CWE-327
+    references: [NIST FIPS 203]
