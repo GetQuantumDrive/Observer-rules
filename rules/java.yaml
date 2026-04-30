@@ -591,18 +591,6 @@
     cwe: CWE-327
     references: [NIST FIPS 203, NIST FIPS 204]
 
-- id: java-bc-rsa-key-gen-params
-  language: java
-  pattern: 'RSAKeyGenerationParameters'
-  algorithm: RSA
-  quantum_threat: shor-broken
-  primitive: key-generation
-  severity: HIGH
-  message: Bouncy Castle RSA key generation parameters are quantum-vulnerable
-  migration: Replace with ML-KEM (FIPS 203) for key encapsulation or ML-DSA (FIPS 204) for signing.
-  metadata:
-    cwe: CWE-327
-    references: [NIST FIPS 203, NIST FIPS 204]
 
 - id: java-bc-ec-key-gen-params
   language: java
@@ -747,3 +735,552 @@
   metadata:
     cwe: CWE-327
     references: [NIST FIPS 203]
+
+# ── AES / symmetric — Grover-weakened ─────────────────────────────────────────
+
+- id: java-aes-ecb
+  language: java
+  pattern: 'Cipher\.getInstance\s*\(\s*["'']AES/ECB'
+  algorithm: AES
+  quantum_threat: grover-reduced
+  primitive: symmetric-encryption
+  severity: HIGH
+  message: AES in ECB mode is insecure (pattern leakage), also weakened under Grover
+  migration: >
+    Use AES-GCM or ChaCha20-Poly1305 for authenticated encryption.
+  metadata:
+    cwe: CWE-327
+    references: [NIST SP 800-38A]
+
+- id: java-sha256-digest
+  language: java
+  pattern: 'MessageDigest\.getInstance\s*\(\s*["'']SHA-256["'']'
+  algorithm: SHA-256
+  quantum_threat: grover-reduced
+  primitive: hash
+  severity: MEDIUM
+  message: SHA-256 offers reduced security under Grover's algorithm
+  migration: >
+    For long-term security, consider SHA-512 or SHA-3 family.
+  metadata:
+    cwe: CWE-328
+    references: [NIST SP 800-107]
+
+# ── Bouncy Castle PQC — positive detection ────────────────────────────────────
+
+- id: bc-pqc-mlkem
+  language: java
+  pattern: 'org\.bouncycastle\.pqc\.crypto\.mlkem'
+  algorithm: ML-KEM
+  quantum_threat: pqc-standardized
+  primitive: key-encapsulation
+  severity: INFO
+  message: ML-KEM (post-quantum) usage detected
+  migration: >
+    This is a NIST-standardized PQC algorithm (FIPS 203).
+  metadata:
+    references: [NIST FIPS 203]
+
+- id: bc-pqc-mldsa
+  language: java
+  pattern: 'org\.bouncycastle\.pqc\.crypto\.mldsa'
+  algorithm: ML-DSA
+  quantum_threat: pqc-standardized
+  primitive: signature
+  severity: INFO
+  message: ML-DSA (post-quantum) usage detected
+  migration: >
+    This is a NIST-standardized PQC algorithm (FIPS 204).
+  metadata:
+    references: [NIST FIPS 204]
+
+- id: bc-pqc-legacy
+  language: java
+  pattern: 'org\.bouncycastle\.pqc\.crypto\.(rainbow|xmss|sphincs)'
+  algorithm: PQC (various)
+  quantum_threat: pqc-experimental
+  primitive: signature
+  severity: MEDIUM
+  message: Experimental or non-standardized PQC algorithm detected
+  migration: >
+    Prefer ML-DSA (FIPS 204) for signatures or ML-KEM (FIPS 203) for key exchange.
+  metadata:
+    references: [NIST PQC Project]
+
+# ── Google Tink ───────────────────────────────────────────────────────────────
+
+- id: tink-aead
+  language: java
+  pattern: 'AeadConfig\.register'
+  algorithm: AEAD (AES-GCM / ChaCha20)
+  quantum_threat: grover-safe
+  primitive: symmetric-encryption
+  severity: INFO
+  message: Tink AEAD usage detected (safe modern construction)
+  migration: >
+    No action needed; Tink enforces safe defaults.
+  metadata:
+    references: [Google Tink Docs]
+
+- id: tink-hybrid-rsa
+  language: java
+  pattern: 'HybridEncrypt.*RSA'
+  algorithm: RSA
+  quantum_threat: shor-broken
+  primitive: hybrid-encryption
+  severity: HIGH
+  message: Tink hybrid encryption using RSA is quantum-vulnerable
+  migration: >
+    Replace with ML-KEM-based hybrid encryption when available.
+  metadata:
+    references: [NIST FIPS 203]
+
+- id: java-tink-ecdsa-key-template
+  language: java
+  pattern: 'KeyTemplates\.(ECDSA_P256|ECDSA_P384|ECDSA_P521)'
+  algorithm: ECDSA
+  quantum_threat: shor-broken
+  primitive: signature
+  severity: HIGH
+  message: Google Tink ECDSA key template is quantum-vulnerable
+  migration: >
+    Replace with ML-DSA (FIPS 204) when Tink adds PQC support.
+    Interim: use Bouncy Castle org.bouncycastle.pqc.crypto.mldsa.
+  metadata:
+    cwe: CWE-327
+    references: [NIST FIPS 204]
+
+- id: java-tink-ecdsa-key-template-legacy
+  language: java
+  pattern: 'SignatureKeyTemplates\.ECDSA_'
+  algorithm: ECDSA
+  quantum_threat: shor-broken
+  primitive: signature
+  severity: HIGH
+  message: Google Tink legacy SignatureKeyTemplates ECDSA template is quantum-vulnerable
+  migration: >
+    Migrate off deprecated SignatureKeyTemplates, then replace ECDSA with ML-DSA (FIPS 204).
+  metadata:
+    cwe: CWE-327
+    references: [NIST FIPS 204]
+
+- id: java-tink-rsa-ssa-template
+  language: java
+  pattern: 'KeyTemplates\.(RSA_SSA_PKCS1_|RSA_SSA_PSS_)'
+  algorithm: RSA
+  quantum_threat: shor-broken
+  primitive: signature
+  severity: HIGH
+  message: Google Tink RSA signature key template is quantum-vulnerable
+  migration: >
+    Replace with ML-DSA (FIPS 204) when Tink adds PQC support.
+    Interim: use Bouncy Castle org.bouncycastle.pqc.crypto.mldsa.
+  metadata:
+    cwe: CWE-327
+    references: [NIST FIPS 204]
+
+- id: java-tink-rsa-ssa-template-legacy
+  language: java
+  pattern: 'SignatureKeyTemplates\.(RSA_SSA_PKCS1_|RSA_SSA_PSS_)'
+  algorithm: RSA
+  quantum_threat: shor-broken
+  primitive: signature
+  severity: HIGH
+  message: Google Tink legacy SignatureKeyTemplates RSA template is quantum-vulnerable
+  migration: >
+    Migrate off deprecated SignatureKeyTemplates, then replace RSA with ML-DSA (FIPS 204).
+  metadata:
+    cwe: CWE-327
+    references: [NIST FIPS 204]
+
+- id: java-tink-ecies-key-template
+  language: java
+  pattern: 'KeyTemplates\.ECIES_'
+  algorithm: ECIES
+  quantum_threat: shor-broken
+  primitive: key-exchange
+  severity: HIGH
+  message: Google Tink ECIES hybrid encryption key template is quantum-vulnerable
+  migration: >
+    Replace with ML-KEM (FIPS 203) for key encapsulation when Tink adds PQC support.
+  metadata:
+    cwe: CWE-327
+    references: [NIST FIPS 203]
+
+- id: java-tink-ecies-key-template-legacy
+  language: java
+  pattern: 'HybridKeyTemplates\.ECIES_'
+  algorithm: ECIES
+  quantum_threat: shor-broken
+  primitive: key-exchange
+  severity: HIGH
+  message: Google Tink legacy HybridKeyTemplates ECIES template is quantum-vulnerable
+  migration: >
+    Migrate off deprecated HybridKeyTemplates, then replace ECIES with ML-KEM (FIPS 203).
+  metadata:
+    cwe: CWE-327
+    references: [NIST FIPS 203]
+
+- id: java-tink-jwt-ecdsa-alg
+  language: java
+  pattern: 'JwtEcdsaAlgorithm\.(ES256|ES384|ES512)'
+  algorithm: ECDSA
+  quantum_threat: shor-broken
+  primitive: signature
+  severity: HIGH
+  message: Google Tink JWT ECDSA algorithm is quantum-vulnerable
+  migration: >
+    No standardized PQC JWT algorithms exist yet. Track IETF JOSE WG for
+    ML-DSA (FIPS 204) JWT algorithm identifiers.
+  metadata:
+    cwe: CWE-327
+    references: [NIST FIPS 204]
+
+- id: java-tink-jwt-rsa-pkcs1-alg
+  language: java
+  pattern: 'JwtRsaSsaPkcs1Algorithm\.(RS256|RS384|RS512)'
+  algorithm: RSA
+  quantum_threat: shor-broken
+  primitive: signature
+  severity: HIGH
+  message: Google Tink JWT RSA PKCS#1 algorithm is quantum-vulnerable
+  migration: >
+    No standardized PQC JWT algorithms exist yet. Track IETF JOSE WG for
+    ML-DSA (FIPS 204) JWT algorithm identifiers.
+  metadata:
+    cwe: CWE-327
+    references: [NIST FIPS 204]
+
+- id: java-tink-jwt-rsa-pss-alg
+  language: java
+  pattern: 'JwtRsaSsaPssAlgorithm\.(PS256|PS384|PS512)'
+  algorithm: RSA
+  quantum_threat: shor-broken
+  primitive: signature
+  severity: HIGH
+  message: Google Tink JWT RSA-PSS algorithm is quantum-vulnerable
+  migration: >
+    No standardized PQC JWT algorithms exist yet. Track IETF JOSE WG for
+    ML-DSA (FIPS 204) JWT algorithm identifiers.
+  metadata:
+    cwe: CWE-327
+    references: [NIST FIPS 204]
+
+# ── Apache Commons Crypto ─────────────────────────────────────────────────────
+
+- id: commonscrypto-aes-cbc
+  language: java
+  pattern: 'CryptoCipher.*AES/CBC'
+  algorithm: AES
+  quantum_threat: grover-reduced
+  primitive: symmetric-encryption
+  severity: MEDIUM
+  message: AES-CBC lacks authentication and is weakened under Grover
+  migration: >
+    Prefer AES-GCM for authenticated encryption.
+  metadata:
+    cwe: CWE-327
+    references: [NIST SP 800-38D]
+
+- id: java-commons-crypto-des
+  language: java
+  pattern: 'CryptoCipherFactory\.getCryptoCipher\s*\(\s*["'']DES/'
+  algorithm: DES
+  quantum_threat: classical-broken
+  primitive: symmetric-cipher
+  severity: CRITICAL
+  message: Apache Commons Crypto DES cipher is classically broken
+  migration: >
+    Replace with AES-256-GCM: CryptoCipherFactory.getCryptoCipher("AES/GCM/NoPadding").
+    DES is deprecated per NIST SP 800-131A.
+  metadata:
+    cwe: CWE-327
+    references: [NIST SP 800-131A]
+
+- id: java-commons-crypto-3des
+  language: java
+  pattern: 'CryptoCipherFactory\.getCryptoCipher\s*\(\s*["'']DESede'
+  algorithm: 3DES
+  quantum_threat: classical-broken
+  primitive: symmetric-cipher
+  severity: CRITICAL
+  message: Apache Commons Crypto Triple-DES cipher is classically broken
+  migration: >
+    Replace with AES-256-GCM: CryptoCipherFactory.getCryptoCipher("AES/GCM/NoPadding").
+    Triple-DES is deprecated per NIST SP 800-131A Rev 2.
+  metadata:
+    cwe: CWE-327
+    references: [NIST SP 800-131A]
+
+- id: java-commons-crypto-rc4
+  language: java
+  pattern: 'CryptoCipherFactory\.getCryptoCipher\s*\(\s*["'']RC4'
+  algorithm: RC4
+  quantum_threat: classical-broken
+  primitive: stream-cipher
+  severity: CRITICAL
+  message: Apache Commons Crypto RC4 stream cipher is classically broken
+  migration: >
+    Replace with AES-256-GCM or ChaCha20-Poly1305.
+    RC4 is prohibited by RFC 7465 and broken in all contexts.
+  metadata:
+    cwe: CWE-327
+    references: [NIST SP 800-131A]
+
+# ── Jasypt ────────────────────────────────────────────────────────────────────
+
+- id: jasypt-default
+  language: java
+  pattern: 'StandardPBEStringEncryptor'
+  algorithm: PBE (often weak defaults)
+  quantum_threat: classical-broken
+  primitive: password-based-encryption
+  severity: HIGH
+  message: Jasypt default configuration may use weak algorithms (e.g., MD5 + DES)
+  migration: >
+    Configure with strong algorithms (e.g., PBKDF2 + AES-256) or migrate to modern KDFs.
+  metadata:
+    cwe: CWE-327
+    references: [OWASP Cryptographic Storage Cheat Sheet]
+
+- id: java-jasypt-basic-text-encryptor
+  language: java
+  pattern: 'BasicTextEncryptor'
+  algorithm: PBEWithMD5AndDES
+  quantum_threat: classical-broken
+  primitive: symmetric-cipher
+  severity: CRITICAL
+  message: Jasypt BasicTextEncryptor defaults to PBEWithMD5AndDES — classically broken
+  migration: >
+    Replace with StandardPBEStringEncryptor configured with
+    PBEWITHHMACSHA256ANDAES_256 and RandomIvGenerator.
+  metadata:
+    cwe: CWE-327
+    references: [NIST SP 800-131A]
+
+- id: java-jasypt-strong-text-encryptor
+  language: java
+  pattern: 'StrongTextEncryptor'
+  algorithm: PBEWithMD5And3DES
+  quantum_threat: classical-broken
+  primitive: symmetric-cipher
+  severity: CRITICAL
+  message: Jasypt StrongTextEncryptor defaults to PBEWithMD5And3DES — classically broken despite the name
+  migration: >
+    Replace with StandardPBEStringEncryptor configured with
+    PBEWITHHMACSHA256ANDAES_256 and RandomIvGenerator.
+  metadata:
+    cwe: CWE-327
+    references: [NIST SP 800-131A]
+
+- id: java-jasypt-basic-password-encryptor
+  language: java
+  pattern: 'BasicPasswordEncryptor'
+  algorithm: MD5
+  quantum_threat: classical-broken
+  primitive: hash
+  severity: CRITICAL
+  message: Jasypt BasicPasswordEncryptor uses MD5 for password hashing — classically broken
+  migration: >
+    Replace with BCryptPasswordEncryptor or StandardStringDigester
+    configured with SHA-512 and a random salt.
+  metadata:
+    cwe: CWE-328
+    references: [NIST SP 800-131A]
+
+- id: java-jasypt-pbe-md5-algorithm
+  language: java
+  pattern: 'setAlgorithm\s*\(\s*["'']PBEWithMD5'
+  algorithm: PBEWithMD5
+  quantum_threat: classical-broken
+  primitive: symmetric-cipher
+  severity: CRITICAL
+  message: Jasypt explicit PBEWithMD5 algorithm configuration is classically broken
+  migration: >
+    Replace with setAlgorithm("PBEWITHHMACSHA256ANDAES_256") and
+    increase key-obtention iterations to at least 100000.
+  metadata:
+    cwe: CWE-327
+    references: [NIST SP 800-131A]
+
+# ── JCA — classical-broken algorithms ────────────────────────────────────────
+
+- id: java-jca-md5-digest
+  language: java
+  pattern: 'MessageDigest\.getInstance\s*\(\s*["'']MD5["'']'
+  algorithm: MD5
+  quantum_threat: classical-broken
+  primitive: hash
+  severity: CRITICAL
+  message: MD5 digest is classically broken and collision-unsafe
+  migration: >
+    Replace with MessageDigest.getInstance("SHA-256") or SHA-512.
+    MD5 is deprecated for all security-sensitive uses per NIST SP 800-131A.
+  metadata:
+    cwe: CWE-328
+    references: [NIST SP 800-131A]
+
+- id: java-jca-des-cipher
+  language: java
+  pattern: 'Cipher\.getInstance\s*\(\s*["'']DES[/"'']'
+  algorithm: DES
+  quantum_threat: classical-broken
+  primitive: symmetric-cipher
+  severity: CRITICAL
+  message: DES cipher is classically broken (56-bit key, brute-forceable)
+  migration: >
+    Replace with Cipher.getInstance("AES/GCM/NoPadding") with a 256-bit key.
+    DES is deprecated per NIST SP 800-131A.
+  metadata:
+    cwe: CWE-327
+    references: [NIST SP 800-131A]
+
+- id: java-jca-3des-cipher
+  language: java
+  pattern: 'Cipher\.getInstance\s*\(\s*["'']DESede'
+  algorithm: 3DES
+  quantum_threat: classical-broken
+  primitive: symmetric-cipher
+  severity: CRITICAL
+  message: Triple-DES (DESede) cipher is classically broken and deprecated per NIST SP 800-131A
+  migration: >
+    Replace with Cipher.getInstance("AES/GCM/NoPadding") with a 256-bit key.
+  metadata:
+    cwe: CWE-327
+    references: [NIST SP 800-131A]
+
+- id: java-jca-rc4-cipher
+  language: java
+  pattern: 'Cipher\.getInstance\s*\(\s*["''](RC4|ARCFOUR)["'']'
+  algorithm: RC4
+  quantum_threat: classical-broken
+  primitive: stream-cipher
+  severity: CRITICAL
+  message: RC4/ARCFOUR stream cipher is classically broken
+  migration: >
+    Replace with Cipher.getInstance("ChaCha20-Poly1305") (JDK 11+)
+    or Cipher.getInstance("AES/GCM/NoPadding").
+  metadata:
+    cwe: CWE-327
+    references: [NIST SP 800-131A]
+
+- id: java-jca-hmacmd5
+  language: java
+  pattern: 'Mac\.getInstance\s*\(\s*["'']HmacMD5["'']'
+  algorithm: HmacMD5
+  quantum_threat: classical-broken
+  primitive: mac
+  severity: CRITICAL
+  message: HmacMD5 uses MD5 which is collision-broken
+  migration: >
+    Replace with Mac.getInstance("HmacSHA256") or HmacSHA512.
+    MD5-based MACs are deprecated per NIST SP 800-131A.
+  metadata:
+    cwe: CWE-328
+    references: [NIST SP 800-131A]
+
+- id: java-jca-des-keygen
+  language: java
+  pattern: 'KeyGenerator\.getInstance\s*\(\s*["''](DES|DESede)["'']'
+  algorithm: DES/3DES
+  quantum_threat: classical-broken
+  primitive: key-generation
+  severity: CRITICAL
+  message: DES or Triple-DES key generation is classically broken
+  migration: >
+    Replace with KeyGenerator.getInstance("AES") and keyGen.init(256).
+  metadata:
+    cwe: CWE-327
+    references: [NIST SP 800-131A]
+
+- id: java-jca-md5-rsa-signature
+  language: java
+  pattern: 'Signature\.getInstance\s*\(\s*["'']MD5withRSA["'']'
+  algorithm: MD5withRSA
+  quantum_threat: classical-broken
+  primitive: signature
+  severity: CRITICAL
+  message: MD5withRSA is classically broken (MD5 collision attack) and quantum-vulnerable (RSA)
+  migration: >
+    Replace immediately with Signature.getInstance("SHA256withRSA") as an interim
+    step, then migrate to ML-DSA (FIPS 204) for full quantum safety.
+  metadata:
+    cwe: CWE-328
+    references: [NIST SP 800-131A, NIST FIPS 204]
+
+# ── Bouncy Castle — classical-broken algorithms ───────────────────────────────
+
+- id: java-bc-md5-digest
+  language: java
+  pattern: 'MD5Digest'
+  algorithm: MD5
+  quantum_threat: classical-broken
+  primitive: hash
+  severity: CRITICAL
+  message: Bouncy Castle MD5Digest is classically broken and collision-unsafe
+  migration: >
+    Replace with SHA256Digest or SHA3Digest from Bouncy Castle.
+    MD5 is deprecated per NIST SP 800-131A.
+  metadata:
+    cwe: CWE-328
+    references: [NIST SP 800-131A]
+
+- id: java-bc-des-engine
+  language: java
+  pattern: 'DESEngine|DESParameters'
+  algorithm: DES
+  quantum_threat: classical-broken
+  primitive: symmetric-cipher
+  severity: CRITICAL
+  message: Bouncy Castle DES cipher engine or parameters detected — classically broken
+  migration: >
+    Replace with AES-256-GCM: new GCMBlockCipher(new AESEngine()).
+    DES is deprecated per NIST SP 800-131A.
+  metadata:
+    cwe: CWE-327
+    references: [NIST SP 800-131A]
+
+- id: java-bc-3des-engine
+  language: java
+  pattern: 'DESedeEngine'
+  algorithm: 3DES
+  quantum_threat: classical-broken
+  primitive: symmetric-cipher
+  severity: CRITICAL
+  message: Bouncy Castle Triple-DES engine is classically broken and deprecated
+  migration: >
+    Replace with AES-256-GCM: new GCMBlockCipher(new AESEngine()).
+    Triple-DES is deprecated per NIST SP 800-131A Rev 2.
+  metadata:
+    cwe: CWE-327
+    references: [NIST SP 800-131A]
+
+- id: java-bc-rc4-engine
+  language: java
+  pattern: 'RC4Engine'
+  algorithm: RC4
+  quantum_threat: classical-broken
+  primitive: stream-cipher
+  severity: CRITICAL
+  message: Bouncy Castle RC4 stream cipher engine is classically broken
+  migration: >
+    Replace with ChaCha20Poly1305 from Bouncy Castle or
+    new GCMBlockCipher(new AESEngine()) for authenticated encryption.
+  metadata:
+    cwe: CWE-327
+    references: [NIST SP 800-131A]
+
+# ── Spring Security — safe detection ──────────────────────────────────────────
+
+- id: spring-bcrypt
+  language: java
+  pattern: 'BCryptPasswordEncoder'
+  algorithm: bcrypt
+  quantum_threat: grover-safe
+  primitive: password-hashing
+  severity: INFO
+  message: BCrypt password hashing detected (quantum-resistant class)
+  migration: >
+    No urgent action; consider Argon2 for stronger memory hardness.
+  metadata:
+    references: [OWASP Password Storage Cheat Sheet]
